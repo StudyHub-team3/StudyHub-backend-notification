@@ -15,9 +15,26 @@ public class StudyEvent {
     public static class Data {
         private Long studyId;
         private Long userId;
+
+        @Override
+        public String toString() {
+            return " {\n" +
+                    "\t\tstudyId=" + studyId + '\n' +
+                    "\t\tuserId=" + userId + '\n' +
+                    "\t}";
+        }
     }
 
     public String getExternalId() {
         return eventType + ":" + data.getStudyId();
+    }
+
+    @Override
+    public String toString() {
+        return "\nStudyEvent{  \n" +
+                "\teventType='" + eventType + '\n' +
+                "\tdata=" + data + '\n' +
+                "\ttimestamp='" + timestamp + '\n' +
+                '}';
     }
 }
