@@ -9,4 +9,7 @@ spring:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   kafka:
-    bootstrap-servers: kafka:9092
+    bootstrap-servers: k8s-external-kafka-service:9092
+
+
+

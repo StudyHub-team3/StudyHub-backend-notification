@@ -16,6 +16,7 @@ public class NotificationResponseDto {
     private String content;
     private String link;
     private boolean isRead;
+    private String externalId;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -26,10 +27,11 @@ public class NotificationResponseDto {
                 .type(notification.getType())
                 .title(notification.getTitle())
                 .content(notification.getContent())
-                .link(notification.getLink())
                 .isRead(notification.isRead())
+                .externalId(notification.getExternalId())
                 .createdAt(notification.getCreatedAt())
                 .updatedAt(notification.getUpdatedAt())
                 .build();
     }
 }
+
