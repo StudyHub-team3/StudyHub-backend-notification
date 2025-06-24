@@ -56,6 +56,13 @@ public class Notification {
     }
 
     public static Notification of(StudyEvent event) {
+        String role = event.getData().getCreatorRole();
+        String userName = event.getData().getUsername();
+        Long studyId = event.getData().getStudyId();
+
+        String content = String.format("[%s] %s님이 스터디를 생성했습니다.",
+                role.equals("MENTOR") ? "멘토" : "멘티", userName);
+
         Notification notification = Notification.builder()
                 .userId(event.getData().getUserId())
                 .type(event.getEventType())

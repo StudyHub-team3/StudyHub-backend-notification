@@ -22,6 +22,8 @@ public class TestController {
         StudyEvent.Data data = new StudyEvent.Data();
         data.setStudyId(1L);
         data.setUserId(1L);
+        data.setUsername("홍길동");
+        data.setCreatorRole("MENTOR");
         studyEvent.setData(data);
         studyEvent.setTimestamp("today");
 

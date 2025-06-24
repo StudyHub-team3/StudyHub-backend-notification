@@ -8,6 +8,5 @@ public class NotificationEventDto {
     private String type;
     private String title;
     private String content;
-    private String link;
     private String externalId;
 }

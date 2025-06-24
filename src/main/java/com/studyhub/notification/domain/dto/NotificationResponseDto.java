@@ -14,7 +14,6 @@ public class NotificationResponseDto {
     private String type;
     private String title;
     private String content;
-    private String link;
     private boolean isRead;
     private String externalId;
     private LocalDateTime createdAt;

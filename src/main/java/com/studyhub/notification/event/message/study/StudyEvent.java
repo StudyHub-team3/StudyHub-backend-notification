@@ -15,12 +15,17 @@ public class StudyEvent {
     public static class Data {
         private Long studyId;
         private Long userId;
+        private String username;
+        private String creatorRole; // "MENTOR" or "MENTEE"
+
 
         @Override
         public String toString() {
             return " {\n" +
                     "\t\tstudyId=" + studyId + '\n' +
                     "\t\tuserId=" + userId + '\n' +
+                    "\t\tusername=" + username + '\n' +
+                    "\t\tcreatorRole=" + creatorRole + '\n' +
                     "\t}";
         }
     }
