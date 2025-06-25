@@ -1,52 +1,96 @@
 package com.studyhub.notification.service;
 
+import com.studyhub.notification.domain.dto.NotificationRequestDto;
+import com.studyhub.notification.domain.dto.NotificationResponseDto;
 import com.studyhub.notification.domain.entity.Notification;
 import com.studyhub.notification.domain.repository.NotificationRepository;
+import com.studyhub.notification.event.message.chat.ChatEvent;
+import com.studyhub.notification.event.message.study.StudyEvent;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class NotificationService {
 
     private final NotificationRepository notificationRepository;
 
-     //알림 생성
-    public Notification create(Notification notification) {
+    public NotificationResponseDto create(NotificationRequestDto dto) {
+        Notification notification = Notification.builder()
+                .userId(dto.getUserId())
+                .type(dto.getType())
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .externalId(dto.getExternalId())
+                .isRead(false)
+                .build();
         notification.initializeTimestamps();
-        return notificationRepository.save(notification);
+        return NotificationResponseDto.from(notificationRepository.save(notification));
     }
 
-     //사용자 ID 기준 알림 전체 조회
-    public List<Notification> findByUserId(Long userId) {
-        return notificationRepository.findByUserId(userId);
+    @Transactional(readOnly = true)
+    public List<NotificationResponseDto> findByUserId(Long userId) {
+        return notificationRepository.findByUserId(userId).stream()
+                .map(NotificationResponseDto::from)
+                .collect(Collectors.toList());
     }
 
-     //알림 단건 읽음 처리
+    @Transactional(readOnly = true)
+    public NotificationResponseDto findById(Long id) {
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("해당 알림을 찾을 수 없습니다."));
+        return NotificationResponseDto.from(notification);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<NotificationResponseDto> findByFilter(Long userId, Boolean isRead, String type, Pageable pageable) {
+        return notificationRepository.findByUserIdAndOptionalFilters(userId, isRead, type, pageable)
+                .map(NotificationResponseDto::from);
+    }
+
     public void markAsRead(Long id) {
-        Notification noti = notificationRepository.findById(id)
+        Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 알림입니다."));
-        noti.markAsRead();
-        notificationRepository.save(noti);
+        notification.markAsRead();
+        notificationRepository.save(notification);
     }
 
-     //알림 단건 삭제
     public void delete(Long id) {
         notificationRepository.deleteById(id);
     }
 
-    //알림 여러 개 삭제 (일괄 삭제)
     public void deleteAll(List<Long> ids) {
         notificationRepository.deleteAllById(ids);
     }
 
 
-     //알림 단건 조회
-    public Notification findById(Long id) {
-        return notificationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 알림을 찾을 수 없습니다."));
+    public void handleStudyEvent(StudyEvent event) {
+        if (notificationRepository.existsByExternalId(event.getExternalId())) {
+            return;
+        }
+
+        Notification notification = Notification.of(event);
+        notificationRepository.save(notification);
     }
+
+    public void handleUserMessage(ChatEvent event) {
+        if (notificationRepository.existsByExternalId(event.getExternalId())) return;
+        Notification notification = Notification.of(event);
+        notificationRepository.save(notification);
+    }
+
+//    public void handleUserReply(UserReplyEvent event) {
+//        if (notificationRepository.existsByExternalId(event.getExternalId())) return;
+//        Notification notification = Notification.of(event);
+//        notificationRepository.save(notification);
+//    }
 }
+
+

@@ -1,5 +1,7 @@
 package com.studyhub.notification.domain.entity;
 
+import com.studyhub.notification.event.message.chat.ChatEvent;
+import com.studyhub.notification.event.message.study.StudyEvent;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
@@ -18,7 +20,7 @@ public class Notification {
     private Long userId;
 
     @Column(nullable = false)
-    private String type;  // ex: MATCHING, CHAT 등
+    private String type;
 
     @Column(nullable = false, length = 100)
     private String title;
@@ -27,10 +29,11 @@ public class Notification {
     @Column(nullable = false)
     private String content;
 
-    private String link;
-
     @Column(nullable = false)
     private boolean isRead;
+
+    @Column(unique = true)
+    private String externalId;
 
     @Column(nullable = false)
     private LocalDateTime createdAt;
@@ -50,5 +53,38 @@ public class Notification {
     public void initializeTimestamps() {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public static Notification of(StudyEvent event) {
+        String role = event.getData().getCreatorRole();
+        String userName = event.getData().getUsername();
+        Long studyId = event.getData().getStudyId();
+
+        String content = String.format("[%s] %s님이 스터디를 생성했습니다.",
+                role.equals("MENTOR") ? "멘토" : "멘티", userName);
+
+        Notification notification = Notification.builder()
+                .userId(event.getData().getUserId())
+                .type(event.getEventType())
+                .title("스터디 알림")
+                .content(event.getEventType().equals("STUDY_CREATED") ? "새로운 스터디가 생성되었습니다." : "스터디가 삭제되었습니다.")
+                .externalId(event.getEventType() + ":" + event.getData().getStudyId())
+                .isRead(false)
+                .build();
+        notification.initializeTimestamps();
+        return notification;
+    }
+
+    public static Notification of(ChatEvent event) {
+        Notification notification = Notification.builder()
+                .userId(event.getData().getSpeakerId())
+                .type(event.getEventType())
+                .title("새로운 메시지 도착")
+                .content(event.getData().getContent())
+                .externalId("USER_MESSAGE:" + event.getData().getStudyChatMessageId())
+                .isRead(false)
+                .build();
+        notification.initializeTimestamps();
+        return notification;
     }
 }

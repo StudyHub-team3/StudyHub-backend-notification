@@ -1,0 +1,15 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://backend-study-external-mysql-service:3306/notification?serverTimezone=UTC
+    username: user
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  kafka:
+    bootstrap-servers: k8s-external-kafka-service:9092
+
+
+
